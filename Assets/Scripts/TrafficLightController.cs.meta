@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 14148701f8b9847b88c2820ef80b0a5c
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - redLightMaterial: {fileID: 2100000, guid: 8c5f4f65017f44735ad8fd155357f343, type: 2}
+  - yellowLightMaterial: {fileID: 2100000, guid: 678f3d0d7c22346b7a0fab688a5811ab, type: 2}
+  - greenLightMaterial: {fileID: 2100000, guid: ff7f10ed73ede48d9b66b7f4050828a4, type: 2}
+  - offLightMaterial: {fileID: 2100000, guid: af8cbaabbbb9444619bdf75c6b7a1dcd, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
