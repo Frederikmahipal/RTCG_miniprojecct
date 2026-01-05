@@ -25,20 +25,16 @@ public class TrafficLightController : MonoBehaviour
     public Material offLightMaterial;
 
 
-    // Internal state
     private enum LightState { Red, Yellow, Green }
     private LightState currentState = LightState.Red;
-    private LightState previousState = LightState.Red; // Track previous state to know yellow direction
+    private LightState previousState = LightState.Red; 
     private float stateTimer = 0f;
-    private bool northSouthIsGreen = true; // Start with North-South green
+    private bool northSouthIsGreen = true; 
 
-    // Cache for light meshes
     private Dictionary<GameObject, LightMeshes> lightMeshCache = new Dictionary<GameObject, LightMeshes>();
 
-    // Cache for material instances (one per renderer)
     private Dictionary<Renderer, Material> materialInstanceCache = new Dictionary<Renderer, Material>();
 
-    // Helper class to store references to red/yellow/green meshes
     private class LightMeshes
     {
         public Renderer redLight;
@@ -48,7 +44,6 @@ public class TrafficLightController : MonoBehaviour
 
     void Start()
     {
-        // Check if traffic lights are assigned
         if (northSouthLights == null || northSouthLights.Count == 0)
         {
             Debug.LogWarning("TrafficLightController: No North-South traffic lights assigned! Please drag traffic light GameObjects into the northSouthLights list in the Inspector.");
@@ -59,18 +54,15 @@ public class TrafficLightController : MonoBehaviour
             Debug.LogWarning("TrafficLightController: No East-West traffic lights assigned! Please drag traffic light GameObjects into the eastWestLights list in the Inspector.");
         }
 
-        // Cache all light meshes for each traffic light
         CacheLightMeshes(northSouthLights);
         CacheLightMeshes(eastWestLights);
 
-        // Check if materials are assigned
         if (redLightMaterial == null || yellowLightMaterial == null || greenLightMaterial == null)
         {
             Debug.LogError("TrafficLightController: Please assign Red, Yellow, and Green materials created from TrafficLightEmissive shader!");
             return;
         }
 
-        // Create off material if not assigned
         if (offLightMaterial == null)
         {
             CreateOffMaterial();
@@ -85,7 +77,6 @@ public class TrafficLightController : MonoBehaviour
             return;
         }
 
-        // Initialize all lights to red
         SetAllLightsRed();
     }
 
@@ -98,60 +89,34 @@ public class TrafficLightController : MonoBehaviour
             case LightState.Red:
                 if (stateTimer >= redDuration)
                 {
-                    previousState = LightState.Red; // Save Red as previous
-                    currentState = LightState.Yellow;
+                    currentState = LightState.Green;
                     stateTimer = 0f;
-                    Debug.Log($"DEBUG: Red -> Yellow (previousState set to: {previousState})");
-                    SetLightsYellow();
-                }
-                break;
-
-            case LightState.Yellow:
-                if (stateTimer >= yellowDuration)
-                {
-                    Debug.Log($"DEBUG: In Yellow, previousState = {previousState}");
-                    if (previousState == LightState.Red)
-                    {
-                        // Yellow came from Red, so go to Green
-                        previousState = LightState.Yellow; // Save Yellow as previous
-                        currentState = LightState.Green;
-                        stateTimer = 0f;
-                        // Only toggle if we have lights in both directions
-                        if (eastWestLights != null && eastWestLights.Count > 0)
-                        {
-                            northSouthIsGreen = !northSouthIsGreen;
-                        }
-                        Debug.Log($"DEBUG: Yellow -> Green (previousState was: {LightState.Red}, northSouthIsGreen: {northSouthIsGreen})");
-                        SetLightsGreen();
-                    }
-                    else if (previousState == LightState.Green)
-                    {
-                        // Yellow came from Green, so go to Red
-                        previousState = LightState.Yellow; // Save Yellow as previous
-                        currentState = LightState.Red;
-                        stateTimer = 0f;
-                        Debug.Log($"DEBUG: Yellow -> Red (previousState was: {LightState.Green})");
-                        SetAllLightsRed();
-                    }
-                    else
-                    {
-                        Debug.LogError($"TrafficLightController: Invalid previous state {previousState} when in Yellow! Resetting to Red.");
-                        previousState = LightState.Yellow;
-                        currentState = LightState.Red;
-                        stateTimer = 0f;
-                        SetAllLightsRed();
-                    }
+                    SetLightsGreen();
+                    Debug.Log("DEBUG: Red -> Green");
                 }
                 break;
 
             case LightState.Green:
                 if (stateTimer >= greenDuration)
                 {
-                    previousState = LightState.Green; // Save Green as previous
                     currentState = LightState.Yellow;
                     stateTimer = 0f;
-                    Debug.Log($"DEBUG: Green -> Yellow (previousState set to: {previousState})");
                     SetLightsYellow();
+                    Debug.Log("DEBUG: Green -> Yellow");
+                }
+                break;
+
+            case LightState.Yellow:
+                if (stateTimer >= yellowDuration)
+                {
+                    currentState = LightState.Red;
+                    stateTimer = 0f;
+
+                    if (eastWestLights != null && eastWestLights.Count > 0)
+                        northSouthIsGreen = !northSouthIsGreen;
+
+                    SetAllLightsRed();
+                    Debug.Log($"DEBUG: Yellow -> Red (toggle next green: northSouthIsGreen={northSouthIsGreen})");
                 }
                 break;
         }
@@ -167,7 +132,6 @@ public class TrafficLightController : MonoBehaviour
                 continue;
             }
 
-            // Find the Traffic_light_EU child
             Transform trafficLightEU = trafficLight.transform.Find("Traffic_light_EU");
             if (trafficLightEU == null)
             {
@@ -178,7 +142,6 @@ public class TrafficLightController : MonoBehaviour
             {
                 LightMeshes meshes = new LightMeshes();
 
-                // Find red, yellow, green child meshes
                 meshes.redLight = FindLightMesh(trafficLightEU, "red");
                 meshes.yellowLight = FindLightMesh(trafficLightEU, "yellow");
                 meshes.greenLight = FindLightMesh(trafficLightEU, "green");
@@ -257,7 +220,6 @@ public class TrafficLightController : MonoBehaviour
 
     void OnDestroy()
     {
-        // Clean up material instances to prevent memory leaks
         foreach (var materialInstance in materialInstanceCache.Values)
         {
             if (materialInstance != null)
@@ -276,7 +238,6 @@ public class TrafficLightController : MonoBehaviour
 
     void SetLightsGreen()
     {
-        // If no east-west lights, always set north-south to green
         if (eastWestLights == null || eastWestLights.Count == 0)
         {
             SetLightsState(northSouthLights, LightState.Green);
@@ -295,7 +256,6 @@ public class TrafficLightController : MonoBehaviour
 
     void SetLightsYellow()
     {
-        // If no east-west lights, always set north-south to yellow
         if (eastWestLights == null || eastWestLights.Count == 0)
         {
             SetLightsState(northSouthLights, LightState.Yellow);
@@ -324,12 +284,10 @@ public class TrafficLightController : MonoBehaviour
 
             LightMeshes meshes = lightMeshCache[trafficLight];
 
-            // Turn off all lights first
             SetLightMaterial(meshes.redLight, offLightMaterial, "red");
             SetLightMaterial(meshes.yellowLight, offLightMaterial, "yellow");
             SetLightMaterial(meshes.greenLight, offLightMaterial, "green");
 
-            // Turn on the appropriate light
             Renderer activeLight = null;
             Material activeMaterial = null;
 
@@ -376,11 +334,9 @@ public class TrafficLightController : MonoBehaviour
 
         renderer.enabled = true;
 
-        // Create or get material instance for this renderer
         Material materialInstance;
         if (!materialInstanceCache.ContainsKey(renderer))
         {
-            // Create a new material instance
             materialInstance = new Material(material);
             materialInstance.name = material.name + " (Instance)";
             materialInstanceCache[renderer] = materialInstance;
@@ -390,7 +346,6 @@ public class TrafficLightController : MonoBehaviour
             materialInstance = materialInstanceCache[renderer];
         }
 
-        // Copy all properties from source material to instance
         materialInstance.CopyPropertiesFromMaterial(material);
 
         materialInstance.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
@@ -408,5 +363,24 @@ public class TrafficLightController : MonoBehaviour
             Debug.LogWarning($"TrafficLightController: Material assignment failed for {renderer.gameObject.name}! Expected shader: {material.shader.name}, Got: {renderer.material?.shader.name}");
         }
     }
+
+    public bool IsGreenFor(StopPoint.Direction dir)
+    {
+
+        bool anyGreen = (currentState == LightState.Green);
+
+        if (!anyGreen) return false;
+
+        if (dir == StopPoint.Direction.NorthSouth)
+            return northSouthIsGreen;
+        else
+            return !northSouthIsGreen;
+    }
+
+    public bool IsRedFor(StopPoint.Direction dir)
+    {
+        return !IsGreenFor(dir);
+    }
+
 
 }
