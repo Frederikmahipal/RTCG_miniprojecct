@@ -27,9 +27,8 @@ public class TrafficLightController : MonoBehaviour
 
     private enum LightState { Red, Yellow, Green }
     private LightState currentState = LightState.Red;
-    private LightState previousState = LightState.Red; 
     private float stateTimer = 0f;
-    private bool northSouthIsGreen = true; 
+    private bool northSouthIsGreen = true;
 
     private Dictionary<GameObject, LightMeshes> lightMeshCache = new Dictionary<GameObject, LightMeshes>();
 
@@ -92,7 +91,6 @@ public class TrafficLightController : MonoBehaviour
                     currentState = LightState.Green;
                     stateTimer = 0f;
                     SetLightsGreen();
-                    Debug.Log("DEBUG: Red -> Green");
                 }
                 break;
 
@@ -102,7 +100,6 @@ public class TrafficLightController : MonoBehaviour
                     currentState = LightState.Yellow;
                     stateTimer = 0f;
                     SetLightsYellow();
-                    Debug.Log("DEBUG: Green -> Yellow");
                 }
                 break;
 
@@ -116,7 +113,6 @@ public class TrafficLightController : MonoBehaviour
                         northSouthIsGreen = !northSouthIsGreen;
 
                     SetAllLightsRed();
-                    Debug.Log($"DEBUG: Yellow -> Red (toggle next green: northSouthIsGreen={northSouthIsGreen})");
                 }
                 break;
         }
@@ -366,7 +362,6 @@ public class TrafficLightController : MonoBehaviour
 
     public bool IsGreenFor(StopPoint.Direction dir)
     {
-
         bool anyGreen = (currentState == LightState.Green);
 
         if (!anyGreen) return false;
@@ -381,6 +376,4 @@ public class TrafficLightController : MonoBehaviour
     {
         return !IsGreenFor(dir);
     }
-
-
 }

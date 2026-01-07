@@ -30,8 +30,6 @@ public static class StreetLightAutoSetup
             Undo.RegisterCreatedObjectUndo(go, "Add Street Light");
             added++;
         }
-
-        Debug.Log($"Street lights setup done. Added {added} point lights.");
     }
 }
 #endif

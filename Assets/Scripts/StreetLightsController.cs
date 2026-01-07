@@ -38,8 +38,6 @@ public class StreetLightsController : MonoBehaviour
     private readonly List<Light> streetLights = new();
     private float currentIntensity = 0f;
 
-    private bool loggedMode = false;
-
     void Start()
     {
         if (dayNightCycle == null)
@@ -83,8 +81,6 @@ public class StreetLightsController : MonoBehaviour
             streetLights.Add(l);
         }
 
-        Debug.Log($"StreetLightsController: Found/created {streetLights.Count} street light(s). DayNightCycle set: {(dayNightCycle != null)}. Sun set: {(sun != null)}");
-
         SetAll(0f);
     }
 
@@ -102,14 +98,7 @@ public class StreetLightsController : MonoBehaviour
     {
         if (dayNightCycle != null)
         {
-            float dayFactor = dayNightCycle.DayFactor; 
-
-            if (!loggedMode)
-            {
-                loggedMode = true;
-                Debug.Log($"StreetLightsController: Using DayNightCycle.DayFactor. nightStartsAtDayFactor={nightStartsAtDayFactor:0.00}");
-            }
-
+            float dayFactor = dayNightCycle.DayFactor;
             float nightFactor = Mathf.InverseLerp(nightStartsAtDayFactor, 0f, dayFactor);
             nightFactor = Mathf.Clamp01(nightFactor);
 
@@ -120,22 +109,11 @@ public class StreetLightsController : MonoBehaviour
 
         if (sun != null)
         {
-            if (!loggedMode)
-            {
-                loggedMode = true;
-                Debug.Log($"StreetLightsController: Using FALLBACK sun.intensity threshold ({nightSunIntensityThreshold:0.00}). (This is why it can turn on around ~0.09)");
-            }
-
             bool isNight = sun.intensity <= nightSunIntensityThreshold;
             return isNight ? nightIntensity : 0f;
         }
 
-        if (!loggedMode)
-        {
-            loggedMode = true;
-            Debug.LogWarning("StreetLightsController: No DayNightCycle and no Sun found. Lights will stay off.");
-        }
-
+        Debug.LogWarning("StreetLightsController: No DayNightCycle and no Sun found. Lights will stay off.");
         return 0f;
     }
 
